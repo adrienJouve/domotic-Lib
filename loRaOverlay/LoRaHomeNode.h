@@ -12,23 +12,26 @@ public:
     virtual ~LoRaHomeNode() = default;
 
     void setup();
-    void sendToGateway(const JsonDocument& payload, uint8_t txCounter);
+    bool sendToGateway(const JsonDocument& payload);
     void retrySendToGateway();
     bool receiveLoraMessage(JsonDocument& payload);
     unsigned long getRetrySendMessageInterval();
     inline bool isWaitingForAck() { return !mIsTxAvailable; };
+    inline uint16_t getTxCounter() { return mTxCounter; };
 
 protected:
     void send(LoRaHomeFrame& frame, uint8_t bufferSize);
     void rxMode();
     void txMode();
     void flushLoRaFifo();
+    inline void incrementTxCounter() { mTxCounter++; };
 
     uint8_t mNodeId;
     LoRaHomeFrame mTxFrame;
     LoRaHomeFrame mAckFrame;
     bool mIsTxAvailable;
     uint8_t mTxRetryCounter;
+    uint16_t mTxCounter;
 };
 
 #endif

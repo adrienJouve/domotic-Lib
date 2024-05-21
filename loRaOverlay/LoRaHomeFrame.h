@@ -22,8 +22,9 @@ const uint8_t LH_FRAME_INDEX_PAYLOAD = 8;
 const uint8_t LH_NODE_ID_GATEWAY = 0x00;
 const uint8_t LH_NODE_ID_BROADCAST = 0xFF;
 
-const uint8_t LH_MSG_TYPE_NODE_MSG_ACK_REQ = 0x01;
+// Message Type
 const uint8_t LH_MSG_TYPE_NODE_MSG_NO_ACK_REQ = 0x00;
+const uint8_t LH_MSG_TYPE_NODE_MSG_ACK_REQ = 0x01;
 // TODO not used. should be removed?
 const uint8_t LH_MSG_TYPE_GW_MSG_NO_ACK = 0x02;
 const uint8_t LH_MSG_TYPE_GW_MSG_ACK = 0x03;

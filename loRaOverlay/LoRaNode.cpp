@@ -18,7 +18,6 @@ LoRaNode::LoRaNode(uint8_t nodeId,
                    unsigned long processingTimeInterval,
                    bool needTransmissionNow ):
   mNodeId(nodeId),
-  mTxCounter(0),
   mTransmissionTimeInterval(transmissionTimeInterval),
   mProcessingTimeInterval(processingTimeInterval),
   mNeedTransmissionNow(needTransmissionNow)
@@ -71,21 +70,6 @@ unsigned long LoRaNode::getProcessingTimeInterval()
 void LoRaNode::setProcessingTimeInterval(unsigned long timeInterval)
 {
   mProcessingTimeInterval = timeInterval;
-}
-
-/**
- * @brief get the TxCounter value of the Node
- * 
- * @return uint16_t TxCounter of the Node 
- */
-uint16_t LoRaNode::getTxCounter()
-{
-  return mTxCounter;
-}
-
-void LoRaNode::incrementTxCounter()
-{
-  mTxCounter++;
 }
 
 bool LoRaNode::getTransmissionNowFlag()

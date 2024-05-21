@@ -49,14 +49,11 @@ public:
   void setTransmissionTimeInterval(unsigned long timeInterval);
   unsigned long getProcessingTimeInterval();
   void setProcessingTimeInterval(unsigned long timeInterval);
-  uint16_t getTxCounter();
-  void incrementTxCounter();
   bool getTransmissionNowFlag();
   void setTransmissionNowFlag(bool flag);
 
 protected:
   uint8_t mNodeId;
-  uint16_t mTxCounter;
   unsigned long mTransmissionTimeInterval;
   // node processing time interval
   unsigned long mProcessingTimeInterval;

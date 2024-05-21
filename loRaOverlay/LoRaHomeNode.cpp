@@ -22,7 +22,8 @@ LoRaHomeNode::LoRaHomeNode(uint8_t nodeId):
   mTxFrame(MY_NETWORK_ID, nodeId, LH_NODE_ID_GATEWAY, LH_MSG_TYPE_NODE_MSG_ACK_REQ),
   mAckFrame(MY_NETWORK_ID, nodeId, LH_NODE_ID_GATEWAY, LH_MSG_TYPE_NODE_ACK),
   mIsTxAvailable(true),
-  mTxRetryCounter(0)
+  mTxRetryCounter(0),
+  mTxCounter(0)
 {}
 
 /**
@@ -68,13 +69,15 @@ void LoRaHomeNode::setup()
 /** 
  * Send a message to the LoRa2MQTT gateway
  * @param payload the JSON payload to be sent
+ * @param txCounter the counter of the message to be sent
+ * @return true if the message was sent successfully, false otherwise
  */
-void LoRaHomeNode::sendToGateway(const JsonDocument& payload, uint8_t txCounter)
+bool LoRaHomeNode::sendToGateway(const JsonDocument& payload)
 {
   // DEBUG_MSG("LoRaHomeNode::sendToGateway()");
   if(false == mIsTxAvailable){
     DEBUG_MSG("--- Tx not available");
-    return;
+    return false;
   }
 
   mIsTxAvailable = false;
@@ -82,7 +85,7 @@ void LoRaHomeNode::sendToGateway(const JsonDocument& payload, uint8_t txCounter)
   
   // DEBUG_MSG("--- create LoraHomeFrame");
   // create frame
-  mTxFrame.setCounter(txCounter);
+  mTxFrame.setCounter(getTxCounter());
   // create payload
   // DEBUG_MSG("--- create LoraHomePayload");
   JsonDocument jsonDoc = payload;;
@@ -93,6 +96,8 @@ void LoRaHomeNode::sendToGateway(const JsonDocument& payload, uint8_t txCounter)
 
   send(mTxFrame, LH_FRAME_MAX_SIZE);
   mTxRetryCounter++;
+
+  return true;
 }
 
 /**
@@ -105,12 +110,15 @@ void LoRaHomeNode::sendToGateway(const JsonDocument& payload, uint8_t txCounter)
  */
 void LoRaHomeNode::retrySendToGateway()
 {
+  DEBUG_MSG("LoRaHomeNode::retrySendToGateway()");
   // Can't received ack for this message, so skip it to enable next message
   if(MAX_RETRY_NO_VALID_ACK <= mTxRetryCounter){
-    DEBUG_MSG("--- Max retry reached");
+    DEBUG_MSG_ONELINE("--- Max retry reached for nbr: ");
     DEBUG_MSG_VAR(mTxFrame.getCounter());
-    DEBUG_MSG_ONELINE(" -> Send FAILLURE");
+    DEBUG_MSG(" -> Send FAILLURE");
     mIsTxAvailable = true;
+    mTxRetryCounter = 0;
+    incrementTxCounter();
     return;
   }
 
@@ -181,8 +189,11 @@ bool LoRaHomeNode::receiveLoraMessage(JsonDocument& payload)
         mTxFrame.clear();
 
         DEBUG_MSG_ONELINE("--- ack received for Tx counter: ");
+        DEBUG_MSG_VAR(mTxFrame.getCounter());
+        DEBUG_MSG_ONELINE("Rx counter: ");
         DEBUG_MSG_VAR(rxFrame.getCounter());
         DEBUG_MSG(" -> Send SUCCESS");
+        incrementTxCounter();
         return false;
       }else {
         DEBUG_MSG_ONELINE("--- ack received but not for this message, ack counter: ");
@@ -237,6 +248,10 @@ void LoRaHomeNode::send(LoRaHomeFrame& frame, uint8_t bufferSize)
 {
   // DEBUG_MSG("LoRaHomeNode::send");
   // DEBUG_MSG("--- sending LoRa message to LoRa2MQTT gateway");
+  DEBUG_MSG_ONELINE("--- Send frame number: ");
+  DEBUG_MSG_VAR(frame.getCounter());
+  DEBUG_MSG_ONELINE("Message type: ");
+  DEBUG_MSG_VAR(frame.getMessageType());
 
   uint8_t txBuffer[bufferSize];
   uint8_t size = frame.serialize(txBuffer);
